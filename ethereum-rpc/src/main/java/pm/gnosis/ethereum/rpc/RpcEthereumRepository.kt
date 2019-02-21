@@ -10,7 +10,9 @@ import pm.gnosis.ethereum.rpc.models.*
 import pm.gnosis.model.Solidity
 import pm.gnosis.models.Transaction
 import pm.gnosis.models.Wei
+import pm.gnosis.utils.hexAsBigIntegerOrNull
 import java.math.BigDecimal
+import java.math.BigInteger
 
 class RpcEthereumRepository(private val ethereumRpcApi: EthereumRpcConnector) : EthereumRepository {
 
@@ -29,6 +31,10 @@ class RpcEthereumRepository(private val ethereumRpcApi: EthereumRpcConnector) : 
                     .map { rpcRequest.parse(it) }
                     .map { request }
             }
+
+    override fun getNetVersion(): Observable<BigInteger> =
+        ethereumRpcApi.post(JsonRpcRequest(method = "net_version"))
+            .map { it.result?.hexAsBigIntegerOrNull() ?: throw RequestFailedException("net_version failed") }
 
     override fun getBalance(address: Solidity.Address): Observable<Wei> =
         request(EthBalance(address))
@@ -96,6 +102,36 @@ class RpcEthereumRepository(private val ethereumRpcApi: EthereumRpcConnector) : 
 
         }
 
+    override fun getBlockByNumber(block: Block, full: Boolean): Observable<EthereumBlock> =
+        ethereumRpcApi.block(
+            JsonRpcRequest(
+                method = "eth_getBlockByNumber",
+                params = listOf(block.asString(), full)
+            )
+        ).map {
+            it.result?.let {
+                EthereumBlock(
+                    it.number,
+                    it.hash,
+                    it.parentHash,
+                    it.nonce,
+                    it.sha3Uncles,
+                    it.logsBloom,
+                    it.transactionsRoot,
+                    it.stateRoot,
+                    it.receiptsRoot,
+                    it.miner,
+                    it.difficulty,
+                    it.totalDifficulty,
+                    it.extraData,
+                    it.size,
+                    it.gasLimit,
+                    it.gasUsed,
+                    it.timestamp
+                )
+            } ?: throw BlockNotFound()
+        }
+
     override fun getTransactionByHash(transactionHash: String): Observable<TransactionData> =
         ethereumRpcApi.transaction(
             JsonRpcRequest(
@@ -153,5 +189,6 @@ private fun <T> EthRequest<T>.toRpcRequest() =
         is EthGasPrice -> RpcGasPriceRequest(this)
         is EthGetTransactionCount -> RpcTransactionCountRequest(this)
         is EthSendRawTransaction -> RpcSendRawTransaction(this)
+        is EthBlockNumber -> RpcBlockNumber(this)
         else -> throw IllegalArgumentException()
     }

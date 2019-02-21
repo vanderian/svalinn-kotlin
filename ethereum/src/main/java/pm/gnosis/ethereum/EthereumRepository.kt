@@ -26,6 +26,10 @@ interface EthereumRepository {
 
     fun getBlockByHash(blockHash: String): Observable<EthereumBlock>
 
+    fun getBlockByNumber(block: Block, full: Boolean): Observable<EthereumBlock>
+
+    fun getNetVersion(): Observable<BigInteger>
+
     fun getTransactionParameters(
         from: Solidity.Address,
         to: Solidity.Address,
@@ -104,6 +108,8 @@ class EthGetTransactionCount(val from: Solidity.Address, id: Int = 0, val block:
     EthRequest<BigInteger>(id)
 
 class EthSendRawTransaction(val signedData: String, id: Int = 0) : EthRequest<String>(id)
+
+class EthBlockNumber(id: Int = 0) : EthRequest<BigInteger>(id)
 
 class TransactionReceiptNotFound : NoSuchElementException()
 

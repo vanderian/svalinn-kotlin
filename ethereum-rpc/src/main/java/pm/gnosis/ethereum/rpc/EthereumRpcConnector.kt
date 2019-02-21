@@ -16,6 +16,7 @@ interface EthereumRpcConnector {
         const val FUNCTION_GAS_PRICE = "eth_gasPrice"
         const val FUNCTION_GET_TRANSACTION_COUNT = "eth_getTransactionCount"
         const val FUNCTION_SEND_RAW_TRANSACTION = "eth_sendRawTransaction"
+        const val FUNCTION_BLOCK_NUMBER = "eth_blockNumber"
     }
 
     fun receipt(jsonRpcRequest: JsonRpcRequest): Observable<JsonRpcTransactionReceiptResult>

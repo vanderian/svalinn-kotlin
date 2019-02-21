@@ -2,6 +2,7 @@ package pm.gnosis.ethereum.rpc.models
 
 import pm.gnosis.ethereum.*
 import pm.gnosis.ethereum.rpc.EthereumRpcConnector
+import pm.gnosis.ethereum.rpc.EthereumRpcConnector.Companion.FUNCTION_BLOCK_NUMBER
 import pm.gnosis.ethereum.rpc.EthereumRpcConnector.Companion.FUNCTION_CALL
 import pm.gnosis.ethereum.rpc.EthereumRpcConnector.Companion.FUNCTION_ESTIMATE_GAS
 import pm.gnosis.ethereum.rpc.EthereumRpcConnector.Companion.FUNCTION_GAS_PRICE
@@ -117,6 +118,20 @@ class RpcSendRawTransaction(raw: EthSendRawTransaction) : RpcRequest<EthSendRawT
     }
 }
 
+class RpcBlockNumber(raw: EthBlockNumber) : RpcRequest<EthBlockNumber>(raw) {
+    override fun request() =
+        JsonRpcRequest(
+            method = FUNCTION_BLOCK_NUMBER,
+            id = raw.id
+        )
+
+    override fun parse(response: JsonRpcResult) {
+        raw.response = response.error?.let { EthRequest.Response.Failure<BigInteger>(it.message) }
+            ?: response.result?.hexAsBigIntegerOrNull()?.let { EthRequest.Response.Success(it) }
+            ?: EthRequest.Response.Failure("Invalid block number!")
+    }
+}
+
 private fun Transaction?.toCallParams(from: String?) =
     TransactionCallParams(
         from = from,
@@ -128,7 +143,7 @@ private fun Transaction?.toCallParams(from: String?) =
         gasPrice = this?.gasPrice?.toHexString()
     )
 
-private fun Block.asString() =
+internal fun Block.asString() =
     when (this) {
         is BlockNumber -> number.toHexString()
         is BlockEarliest -> EthereumRpcConnector.BLOCK_EARLIEST
