@@ -105,6 +105,7 @@ data class JsonRpcBlockResult(
         @Json(name = "size") val size: BigInteger,
         @Json(name = "gasLimit") val gasLimit: BigInteger,
         @Json(name = "gasUsed") val gasUsed: BigInteger,
-        @Json(name = "timestamp") val timestamp: BigInteger
+        @Json(name = "timestamp") val timestamp: BigInteger,
+        @Json(name = "transactions") val transactions: List<JsonRpcTransactionResult.JsonTransaction>
     )
 }

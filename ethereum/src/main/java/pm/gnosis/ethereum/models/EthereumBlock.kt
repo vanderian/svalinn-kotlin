@@ -21,5 +21,6 @@ data class EthereumBlock(
     val size: BigInteger,
     val gasLimit: BigInteger,
     val gasUsed: BigInteger,
-    val timestamp: BigInteger
+    val timestamp: BigInteger,
+    val transactions: List<TransactionData>
 )

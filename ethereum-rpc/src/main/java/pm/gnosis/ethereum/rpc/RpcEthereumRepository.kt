@@ -96,7 +96,8 @@ class RpcEthereumRepository(private val ethereumRpcApi: EthereumRpcConnector) : 
                     it.size,
                     it.gasLimit,
                     it.gasUsed,
-                    it.timestamp
+                    it.timestamp,
+                    it.transactions.map { it.asTransactionData() }
                 )
             } ?: throw BlockNotFound()
 
@@ -127,7 +128,8 @@ class RpcEthereumRepository(private val ethereumRpcApi: EthereumRpcConnector) : 
                     it.size,
                     it.gasLimit,
                     it.gasUsed,
-                    it.timestamp
+                    it.timestamp,
+                    it.transactions.map { it.asTransactionData() }
                 )
             } ?: throw BlockNotFound()
         }
@@ -192,3 +194,13 @@ private fun <T> EthRequest<T>.toRpcRequest() =
         is EthBlockNumber -> RpcBlockNumber(this)
         else -> throw IllegalArgumentException()
     }
+
+private fun JsonRpcTransactionResult.JsonTransaction.asTransactionData() =
+    TransactionData(
+        hash,
+        from,
+        Transaction(to, Wei(value), gas, gasPrice, data, nonce),
+        transactionIndex,
+        blockHash,
+        blockNumber
+    )
